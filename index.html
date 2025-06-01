@@ -352,12 +352,21 @@
 
                     document.querySelectorAll('.nav-link').forEach(link => {
                         link.addEventListener('click', (e) => {
-                            if (window.innerWidth < 768) {
+                            if (window.innerWidth < 768) { // md breakpoint
                                 document.getElementById('mobile-menu').classList.add('hidden');
+                            }
+                            // Smooth scroll
+                            const targetId = link.getAttribute('href');
+                            const targetElement = document.querySelector(targetId);
+                            if (targetElement) {
+                                e.preventDefault();
+                                targetElement.scrollIntoView({ behavior: 'smooth' });
+                                // Update active link after smooth scroll (optional, setActiveNavLink handles on scroll)
+                                setTimeout(() => this.setActiveNavLink(), 50); // Small delay for scroll to start
                             }
                         });
                     });
-
+                    
                     document.getElementById('theme-filters').addEventListener('click', e => {
                         if (e.target.tagName === 'BUTTON') {
                             this.activeFilter = e.target.dataset.filter;
@@ -385,17 +394,29 @@
                         if(header) {
                             const content = header.nextElementSibling;
                             const icon = header.querySelector('.accordion-icon');
-                            content.classList.toggle('hidden');
-                            icon.textContent = content.classList.contains('hidden') ? '+' : '−';
+                            const isHidden = content.classList.toggle('hidden');
+                            icon.textContent = isHidden ? '+' : '−';
+                            
+                            // Close other accordion items
+                            document.querySelectorAll('#tips-accordion .accordion-content').forEach(otherContent => {
+                                if (otherContent !== content && !otherContent.classList.contains('hidden')) {
+                                    otherContent.classList.add('hidden');
+                                    otherContent.previousElementSibling.querySelector('.accordion-icon').textContent = '+';
+                                }
+                            });
                         }
                     });
                     
                     window.addEventListener('scroll', () => this.setActiveNavLink());
+                    window.addEventListener('resize', () => { // Recalculate on resize if needed
+                         this.setActiveNavLink();
+                         // Potentially re-render charts if their containers changed size significantly
+                    });
                 },
                 renderItineraryGrid() {
                     const grid = document.getElementById('itinerary-grid');
                     grid.innerHTML = itineraryData.map(day => `
-                        <div class="day-card bg-white p-4 rounded-lg shadow-md border-2 border-transparent cursor-pointer ${day.preBooked ? 'pre-booked' : ''}" data-day="${day.day}">
+                        <div class="day-card bg-white p-4 rounded-lg shadow-md border-2 border-transparent cursor-pointer ${day.preBooked ? 'pre-booked' : ''}" data-day="${day.day}" tabindex="0" role="button" aria-label="Details für Tag ${day.day}: ${day.title}">
                             <p class="font-bold text-sm text-slate-800">Tag ${day.day}</p>
                             <p class="text-xs text-slate-500 mb-1">${day.date}</p>
                             <p class="text-slate-700 font-semibold">${day.location}</p>
@@ -411,122 +432,158 @@
                 updateDayCardsHighlight() {
                     document.querySelectorAll('.day-card').forEach(card => {
                         const dayData = itineraryData[card.dataset.day - 1];
-                        const hasTheme = this.activeFilter === 'all' || dayData.themes.includes(this.activeFilter);
+                        const hasTheme = this.activeFilter === 'all' || (dayData.themes && dayData.themes.includes(this.activeFilter));
                         card.classList.toggle('highlight', hasTheme && this.activeFilter !== 'all');
-                        card.style.opacity = hasTheme ? '1' : '0.5';
+                        card.style.opacity = hasTheme || this.activeFilter === 'all' ? '1' : '0.5';
                     });
                 },
                 openModal(dayNumber) {
                     const dayData = itineraryData[dayNumber - 1];
                     document.getElementById('modal-title').textContent = `Tag ${dayData.day}: ${dayData.title} (${dayData.date})`;
-                    const modalContent = document.getElementById('modal-content');
-                    modalContent.innerHTML = dayData.details;
+                    const modalContentEl = document.getElementById('modal-content');
+                    modalContentEl.innerHTML = dayData.details;
 
-                    modalContent.querySelectorAll('.activity-item').forEach(item => {
+                    modalContentEl.querySelectorAll('.activity-item').forEach(item => {
                         const themes = (item.dataset.theme || '').split(' ');
                         if(this.activeFilter !== 'all' && themes.includes(this.activeFilter)){
                             item.classList.add('highlighted');
+                        } else {
+                            item.classList.remove('highlighted');
                         }
                     });
 
-                    document.getElementById('modal').classList.remove('hidden');
-                    document.getElementById('modal').classList.add('flex');
+                    const modal = document.getElementById('modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    modal.setAttribute('aria-hidden', 'false');
                     document.body.style.overflow = 'hidden';
+                    document.getElementById('modal-close').focus(); // Focus on close button
                 },
                 closeModal() {
-                    document.getElementById('modal').classList.add('hidden');
-                    document.getElementById('modal').classList.remove('flex');
+                    const modal = document.getElementById('modal');
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    modal.setAttribute('aria-hidden', 'true');
                     document.body.style.overflow = '';
+                    // Optionally, return focus to the element that opened the modal
                 },
                 setActiveNavLink() {
-                    let currentSection = '';
-                    const sections = document.querySelectorAll('main section');
+                    let currentSectionId = '';
+                    const sections = document.querySelectorAll('main section[id]');
+                    const headerOffset = document.querySelector('header').offsetHeight + 20; // Offset for sticky header + a bit more
+
                     sections.forEach(section => {
-                        const sectionTop = section.offsetTop;
-                        if (pageYOffset >= sectionTop - 80) { // 80px offset for sticky header
-                            currentSection = section.getAttribute('id');
+                        const sectionTop = section.offsetTop - headerOffset;
+                        const sectionBottom = sectionTop + section.offsetHeight;
+                        if (pageYOffset >= sectionTop && pageYOffset < sectionBottom) {
+                           currentSectionId = section.getAttribute('id');
                         }
                     });
+                     // If no section is actively in view (e.g., at the very top or bottom),
+                     // default to the first or last based on scroll position.
+                    if (!currentSectionId && sections.length > 0) {
+                        if (pageYOffset < sections[0].offsetTop - headerOffset) {
+                            currentSectionId = sections[0].getAttribute('id');
+                        } else if (pageYOffset >= sections[sections.length - 1].offsetTop - headerOffset + sections[sections.length - 1].offsetHeight) {
+                            currentSectionId = sections[sections.length - 1].getAttribute('id');
+                        }
+                    }
+
 
                     document.querySelectorAll('.nav-link').forEach(link => {
                         link.classList.remove('active');
-                        if(link.getAttribute('href') === `#${currentSection}`) {
+                        if(link.getAttribute('href') === `#${currentSectionId}`) {
                             link.classList.add('active');
                         }
                     });
                 },
                 renderCharts() {
-                    const nightsCtx = document.getElementById('nightsPerCityChart').getContext('2d');
-                    new Chart(nightsCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Tokio (Start)', 'Kyoto', 'Osaka', 'Tokio (Ende)'],
-                            datasets: [{
-                                label: 'Anzahl Nächte',
-                                data: [3, 3, 5, 4], // Updated nights
-                                backgroundColor: ['#7dd3fc', '#fcd34d', '#f87171', '#7dd3fc'],
-                                borderColor: ['#0ea5e9', '#facc15', '#ef4444', '#0ea5e9'],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                title: { display: false }
+                    // Chart for Nights Per City
+                    const nightsCtx = document.getElementById('nightsPerCityChart');
+                    if (nightsCtx) {
+                       new Chart(nightsCtx.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['Tokio (Start)', 'Kyoto', 'Osaka', 'Tokio (Ende)'],
+                                datasets: [{
+                                    label: 'Anzahl Nächte',
+                                    data: [3, 3, 5, 4],
+                                    backgroundColor: ['#7dd3fc', '#fcd34d', '#f87171', '#7dd3fc'],
+                                    borderColor: ['#0ea5e9', '#facc15', '#ef4444', '#0ea5e9'],
+                                    borderWidth: 1
+                                }]
                             },
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    grid: { color: '#e2e8f0' }
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: { display: false }
                                 },
-                                y: {
-                                    grid: { display: false }
-                                }
-                            }
-                        }
-                    });
-
-                    const transportCtx = document.getElementById('transportCostChart').getContext('2d');
-                    new Chart(transportCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Einzel-/Regionaltickets', 'JR Pass 7 Tage', 'JR Pass 14 Tage'],
-                            datasets: [{
-                                label: 'Geschätzte Kosten in Yen (¥)',
-                                data: [52710, 50000, 80000],
-                                backgroundColor: ['#6ee7b7', '#fcd34d', '#f87171'],
-                                borderColor: ['#10b981', '#facc15', '#ef4444', '#f59e0b'],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                title: {
-                                    display: true,
-                                    text: 'Vergleich der Transportkosten',
-                                    padding: { bottom: 20 }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) { return '¥' + value.toLocaleString(); }
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        grid: { color: '#e2e8f0' }
                                     },
-                                    grid: { color: '#e2e8f0' }
-                                },
-                                x: {
-                                    grid: { display: false }
+                                    y: {
+                                        grid: { display: false }
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
+
+                    // Chart for Transport Costs
+                    const transportCtx = document.getElementById('transportCostChart');
+                    if (transportCtx) {
+                        const jpyCosts = [52710, 50000, 80000]; // Kosten in JPY
+                        const exchangeRateJPYtoEUR = 0.0061; // Wechselkurs JPY zu EUR
+
+                        const eurCosts = jpyCosts.map(cost => parseFloat((cost * exchangeRateJPYtoEUR).toFixed(2)));
+
+                        new Chart(transportCtx.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['Einzel-/Regionaltickets', 'JR Pass 7 Tage', 'JR Pass 14 Tage'],
+                                datasets: [{
+                                    label: 'Geschätzte Kosten in Euro (€)', // Geändert
+                                    data: eurCosts, // Verwendet die umgerechneten EUR-Beträge
+                                    backgroundColor: ['#6ee7b7', '#fcd34d', '#f87171'],
+                                    borderColor: ['#10b981', '#facc15', '#ef4444', '#f59e0b'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: {
+                                        display: true,
+                                        text: 'Vergleich der Transportkosten',
+                                        padding: { bottom: 20 },
+                                        font: { size: 16 }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            // Geändert, um EUR-Formatierung anzuzeigen
+                                            callback: function(value) { 
+                                                return value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }); 
+                                            }
+                                        },
+                                        grid: { color: '#e2e8f0' }
+                                    },
+                                    x: {
+                                        grid: { display: false }
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
             };
             app.init();
