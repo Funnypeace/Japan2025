@@ -14,14 +14,14 @@
         .section-title { font-size: 1.875rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; text-align: center; }
         .nav-link { transition: all 0.2s ease-in-out; border-bottom: 2px solid transparent; }
         .nav-link:hover, .nav-link.active { color: #f59e0b; border-bottom-color: #f59e0b; }
-        .filter-btn { transition: all 0.2s ease-in-out; }
+        .filter-btn { transition: all 0.2s ease-in-out; padding: 0.5rem 1rem; border-radius: 9999px; border: 1px solid #cbd5e1; }
         .filter-btn.active { background-color: #f59e0b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); }
-        .day-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .day-card { transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
         .day-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
         .day-card.highlight { background-color: #fef3c7; border-color: #f59e0b; }
         .day-card.pre-booked { position: relative; background-color: #dbeafe; border-color: #3b82f6; }
         .day-card.pre-booked::after { content: '★'; position: absolute; top:8px; right:8px; color:#3b82f6; font-size:1.25rem; }
-        .modal-content { max-height:80vh; }
+        .modal-content { max-height:80vh; overflow-y:auto; }
         .activity-item.highlighted { background-color:#fefce8; border-left:4px solid #f59e0b; }
         .chart-container { position:relative; width:100%; max-width:800px; margin:0 auto; height:350px; }
         @media(max-width:768px){ .chart-container{ height:300px; } }
@@ -47,62 +47,140 @@
         </div>
     </header>
     <main class="container mx-auto px-4 py-8">
-        <!-- Overview -->
         <section id="overview" class="mb-16 scroll-mt-20">
             <h2 class="section-title">Reiseübersicht</h2>
             <div class="grid md:grid-cols-3 gap-8 mb-12">
-                <div class="bg-white p-6 rounded shadow flex items-center space-x-4"><span class="text-4xl">✈️</span><div><h3 class="font-bold">Flugdaten</h3><p>Ankunft: 18. Juni, 22:30 HND</p><p>Abflug: 04. Juli, 00:05 HND</p></div></div>
-                <div class="bg-white p-6 rounded shadow flex items-center space-x-4"><span class="text-4xl">🗓️</span><div><h3 class="font-bold">Dauer</h3><p>17 Tage / 15 Nächte</p></div></div>
-                <div class="bg-white p-6 rounded shadow flex items-center space-x-4"><span class="text-4xl">🏨</span><div><h3 class="font-bold">Unterkünfte</h3><p>4 Hotels in 3 Städten</p></div></div>
+                <div class="bg-white p-6 rounded shadow flex items-center space-x-4">
+                    <span class="text-4xl">✈️</span>
+                    <div>
+                        <h3 class="font-bold">Flugdaten</h3>
+                        <p>Ankunft: 18. Juni, 22:30 HND</p>
+                        <p>Abflug: 04. Juli, 00:05 HND</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded shadow flex items-center space-x-4">
+                    <span class="text-4xl">🗓️</span>
+                    <div>
+                        <h3 class="font-bold">Dauer</h3>
+                        <p>17 Tage / 15 Nächte</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded shadow flex items-center space-x-4">
+                    <span class="text-4xl">🏨</span>
+                    <div>
+                        <h3 class="font-bold">Unterkünfte</h3>
+                        <p>4 Hotels in 3 Städten</p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded shadow mb-12"><h3 class="font-bold text-center mb-4">Nächte pro Stadt</h3><div class="chart-container"><canvas id="nightsPerCityChart"></canvas></div></div>
-            <div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-center mb-4">Gebuchte Hotels</h3><table class="w-full text-left"><thead class="bg-slate-50"><tr><th class="p-2">Hotel</th><th class="p-2">Stadt</th><th class="p-2">Check-in</th><th class="p-2">Check-out</th></tr></thead><tbody><tr><td class="p-2">Villa Fontaine Tokyo Hamamatsucho</td><td class="p-2">Tokio</td><td class="p-2">18. Juni</td><td class="p-2">21. Juni</td></tr><tr><td class="p-2">Almont Hotel Kyoto</td><td class="p-2">Kyoto</td><td class="p-2">21. Juni</td><td class="p-2">24. Juni</td></tr><tr><td class="p-2">Smile Hotel Shinosaka</td><td class="p-2">Osaka</td><td class="p-2">24. Juni</td><td class="p-2">29. Juni</td></tr><tr><td class="p-2">Shinjuku Granbell Hotel</td><td class="p-2">Tokio</td><td class="p-2">29. Juni</td><td class="p-2">03. Juli</td></tr></tbody></table></div>
+            <div class="bg-white p-6 rounded shadow mb-12">
+                <h3 class="font-bold text-center mb-4">Nächte pro Stadt</h3>
+                <div class="chart-container"><canvas id="nightsPerCityChart"></canvas></div>
+            </div>
+            <div class="bg-white p-6 rounded shadow">
+                <h3 class="font-bold text-center mb-4">Gebuchte Hotels</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50"><tr><th class="p-3">Hotel</th><th class="p-3">Stadt</th><th class="p-3">Check-in</th><th class="p-3">Check-out</th></tr></thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr><td class="p-3">Villa Fontaine Tokyo Hamamatsucho</td><td class="p-3">Tokio</td><td class="p-3">18. Juni</td><td class="p-3">21. Juni</td></tr>
+                            <tr><td class="p-3">Almont Hotel Kyoto</td><td class="p-3">Kyoto</td><td class="p-3">21. Juni</td><td class="p-3">24. Juni</td></tr>
+                            <tr><td class="p-3">Smile Hotel Shinosaka</td><td class="p-3">Osaka</td><td class="p-3">24. Juni</td><td class="p-3">29. Juni</td></tr>
+                            <tr><td class="p-3">Shinjuku Granbell Hotel</td><td class="p-3">Tokio</td><td class="p-3">29. Juni</td><td class="p-3">03. Juli</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
-        <!-- Itinerary -->
         <section id="itinerary" class="mb-16 scroll-mt-20">
             <h2 class="section-title">Interaktiver Reiseplan</h2>
-            <div class="flex space-x-2 mb-4" id="theme-filters"><button data-filter="all" class="filter-btn active">Alle</button><button data-filter="kultur" class="filter-btn">Kultur</button><button data-filter="anime" class="filter-btn">Anime</button><button data-filter="technologie" class="filter-btn">Tech</button></div>
-            <div id="itinerary-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"></div>
+            <p class="text-center mb-6 text-slate-600">Klicken Sie auf einen Tag für Details. Filter anwenden, um Themen hervorzuheben.</p>
+            <div id="theme-filters" class="flex flex-wrap gap-2 mb-8">
+                <button data-filter="all" class="filter-btn active">Alle anzeigen</button>
+                <button data-filter="technologie" class="filter-btn">🖥️ Technologie</button>
+                <button data-filter="anime" class="filter-btn">🎨 Anime</button>
+                <button data-filter="kultur" class="filter-btn">⛩️ Kultur</button>
+            </div>
+            <div id="itinerary-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         </section>
-        <!-- Transport & Tipps -->
         <section id="transport" class="scroll-mt-20">
             <h2 class="section-title">Transport & Reisetipps</h2>
-            <div class="grid md:grid-cols-2 gap-8 mb-8">
-                <div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-center mb-4">Shinkansen-Kosten</h3><div class="chart-container"><canvas id="transportCostChart"></canvas></div><p class="mt-4 text-sm text-center">Empfehlung: JR Kansai-Hiroshima Area Pass</p></div>
-                <div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-center mb-4">Wichtige Tipps</h3>
+            <p class="text-center mb-10 text-slate-600">Hier finden Sie Kostenanalysen und wichtige Tipps für Ihre Reise.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold text-center mb-4">Shinkansen-Kosten</h3>
+                    <div class="chart-container"><canvas id="transportCostChart"></canvas></div>
+                    <p class="text-center text-sm mt-4">Empfehlung: Kombination aus Einzeltickets und JR Kansai-Hiroshima Area Pass.</p>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold text-center mb-4">Wichtige Tipps</h3>
                     <div id="tips-accordion" class="space-y-4">
-                        <div class="accordion-item"><button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded">Geld & Währung<span>+</span></button><div class="accordion-content hidden p-4 border-t"><p>Bargeld mitführen, 7-Eleven-ATM.</p></div></div>
-                        <div class="accordion-item"><button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded">SIM & Internet<span>+</span></button><div class="accordion-content hidden p-4 border-t">Lokale SIM/Pocket-WiFi vorab buchen.</div></div>
-                        <div class="accordion-item"><button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded">Toiletten & Sauberkeit<span>+</span></button><div class="accordion-content hidden p-4 border-t">High-Tech-Toiletten, Taschentücher mitführen.</div></div>
-                        <div class="accordion-item"><button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded">Trinkgeld<span>+</span></button><div class="accordion-content hidden p-4 border-t">In Japan unüblich, Danke genügt.</div></div>
-                        <div class="accordion-item"><button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded">Notfälle<span>+</span></button><div class="accordion-content hidden p-4 border-t">110 Polizei, 119 Rettung. "Japan Official Travel App".</div></div>
+                        <div class="accordion-item">
+                            <button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded-lg">
+                                <span>Geld & Währung</span><span>+</span>
+                            </button>
+                            <div class="accordion-content hidden p-4 border-t">
+                                <p>Bargeld mitführen, 7-Eleven-ATM nutzen.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded-lg">
+                                <span>SIM & Internet</span><span>+</span>
+                            </button>
+                            <div class="accordion-content hidden p-4 border-t">
+                                <p>Lokale SIM oder Pocket-WiFi vorab buchen.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded-lg">
+                                <span>Toiletten & Sauberkeit</span><span>+</span>
+                            </button>
+                            <div class="accordion-content hidden p-4 border-t">
+                                <p>High-Tech-Toiletten, Taschentücher mitführen.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded-lg">
+                                <span>Trinkgeld</span><span>+</span>
+                            </button>
+                            <div class="accordion-content hidden p-4 border-t">
+                                <p>In Japan unüblich, Dankeschön reicht.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-header flex justify-between w-full p-4 bg-slate-50 rounded-lg">
+                                <span>Notfall & Sicherheit</span><span>+</span>
+                            </button>
+                            <div class="accordion-content hidden p-4 border-t">
+                                <p>110 Polizei, 119 Rettung; Japan Official Travel App.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
-    <footer class="bg-slate-800 text-white py-4 text-center text-sm">Ihr persönlicher Reiseplan | Juni–Juli 2025</footer>
+    <footer class="bg-slate-800 text-white py-4 text-center text-sm">Ihr persönlicher Reiseplan | Juni–Juli 2025</footer>
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="font-bold"></h3>
+                <button id="modal-close" class="text-xl">&times;</button>
+            </div>
+            <div id="modal-content" class="p-6 modal-content"></div>
+        </div>
+    </div>
     <script>
-        const itineraryData=[
-            {day:1,date:"18. Juni",location:"Tokio",title:"Ankunft",preBooked:false,details:`<div class="space-y-2"><div class="activity-item"><strong>22:30:</strong> <a href="https://www.google.com/maps/search/?api=1&query=Tokyo+Haneda+Airport" target="_blank">Ankunft Haneda Airport</a></div><div class="activity-item">Einchecken: Villa Fontaine Tokyo Hamamatsucho</div></div>`},
-            {day:2,date:"19. Juni",location:"Tokio",title:"Kultur & Skyline",preBooked:false,details:`<div class="space-y-2"><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Tokyo+Tower" target="_blank">Tokyo Tower</a>, <a href="https://www.google.com/maps/search/?api=1&query=Shiba+Park" target="_blank">Shiba Park</a>, <a href="https://www.google.com/maps/search/?api=1&query=Zojoji+Temple" target="_blank">Zōjō-ji</a></div><div class="activity-item">Essen: <a href="https://www.google.com/maps/search/?api=1&query=Gonpachi+Nishi+Azabu" target="_blank">Gonpachi Nishi-Azabu</a>, Aussichtsplattform Roppongi Hills</div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Hamarikyu+Gardens" target="_blank">Hamarikyū-Park</a></div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Takeshiba+Waterfront" target="_blank">Takeshiba Waterfront</a></div></div>`},
-            {day:3,date:"20. Juni",location:"Tokio",title:"Shibuya & Anime",preBooked:false,details:`<div class="space-y-2"><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Shibuya+Scramble+Crossing" target="_blank">Shibuya Crossing</a> &amp; <a href="https://www.google.com/maps/search/?api=1&query=Don+Quijote+Shibuya" target="_blank">MEGA Don Quijote</a></div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Meiji+Jingu" target="_blank">Meiji Jingu</a>, Takeshita Street &amp; <a href="https://www.google.com/maps/search/?api=1&query=One+Piece+Straw+Hat+Store+Shibuya" target="_blank">One Piece Store</a></div><div class="activity-item">Optional: <a href="https://www.google.com/maps/search/?api=1&query=Imperial+Palace+Tokyo" target="_blank">Imperial Palace</a></div></div>`},
-            {day:4,date:"21. Juni",location:"Tokio → Kyoto",title:"Tempel",preBooked:false,details:`<div class="space-y-2"><div class="activity-item">Auschecken Tokyo Hotel</div><div class="activity-item">Einchecken: <a href="https://www.google.com/maps/search/?api=1&query=Almont+Hotel+Kyoto" target="_blank">Almont Hotel Kyoto</a></div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Kinkaku-ji" target="_blank">Kinkaku-ji</a> &amp; <a href="https://www.google.com/maps/search/?api=1&query=Kiyomizu-dera" target="_blank">Kiyomizu-dera</a></div></div>`},
-            {day:5,date:"22. Juni",location:"Kyoto",title:"Schreine & Wald",preBooked:false,details:`<div class="space-y-2"><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Fushimi+Inari+Taisha" target="_blank">Fushimi Inari Taisha</a></div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Arashiyama+Bamboo+Grove" target="_blank">Arashiyama Bambuswald</a></div></div>`},
-            {day:6,date:"23. Juni",location:"Kyoto",title:"Freier Tag",preBooked:false,details:`<p>Freier Tag in Kyoto</p>`},
-            {day:7,date:"24. Juni",location:"Kyoto → Osaka",title:"Reise nach Osaka",preBooked:false,details:`<div class="space-y-2"><div class="activity-item">Auschecken: Almont Hotel Kyoto</div><div class="activity-item">Einchecken: Smile Hotel Shinosaka</div></div>`},
-            {day:8,date:"25. Juni",location:"Osaka",title:"Universal Studios",preBooked:true,details:`<div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Universal+Studios+Japan" target="_blank">Universal Studios Japan</a></div>`},
-            {day:9,date:"26. Juni",location:"Osaka",title:"Expo 2025",preBooked:true,details:`<div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Expo+2025+Osaka" target="_blank">Expo 2025</a> (Tickets gebucht)</div>`},
-            {day:10,date:"27. Juni",location:"Hiroshima",title:"Hiroshima Ausflug",preBooked:true,details:`<div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Hiroshima+Peace+Park" target="_blank">Hiroshima Peace Park</a> &amp; Prayer Fountain</div>`},
-            {day:11,date:"28. Juni",location:"Osaka",title:"Freier Tag",preBooked:false,details:`<p>Freier Tag in Osaka</p>`},
-            {day:12,date:"29. Juni",location:"Osaka → Tokio",title:"Anime-Abend",preBooked:false,details:`<div class="space-y-2"><div class="activity-item">Auschecken: Smile Hotel Shinosaka</div><div class="activity-item">Einchecken: Shinjuku Granbell Hotel</div><div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Akihabara+Station" target="_blank">Akihabara Viertel</a></div></div>`},
-            {day:13,date:"30. Juni",location:"Tokio",title:"Sensō-ji",preBooked:false,details:`<div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Senso-ji" target="_blank">Sensō-ji</a></div>`},
-            {day:14,date:"1. Juli",location:"Tokio",title:"Anime/Elekto",preBooked:false,details:`<div class="activity-item"><a href="https://www.google.com/maps/search/?api=1&query=Akihabara+Station" target="_blank">Akihabara Viertel</a></div>`},
-            {day:15,date:"2. Juli",location:"Tokio",title:"Freier Tag",preBooked:false,details:`<p>Freier Tag in Tokio</p>`},
-            {day:16,date:"3. Juli",location:"Tokio",title:"Auschecken",preBooked:false,details:`<p>Auschecken: Shinjuku Granbell Hotel</p>`},
-            {day:17,date:"4. Juli",location:"Tokio",title:"Abreise",preBooked:false,details:`<div class="activity-item"><strong>00:05</strong> <a href="https://www.google.com/maps/search/?api=1&query=Haneda+Airport+Departures" target="_blank">Abflug Haneda</a></div>`}
-        ];
-        // Script bleibt unverändert (Grid, Modal, Charts, Accordion ...)
-    </script>
-</body>
-</html>
+        const itineraryData = [
+            { day: 1, date: "18. Juni", location: "Tokio", title: "Ankunft", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\"><strong>22:30:</strong> <a href=\"https://www.google.com/maps/search/?api=1&query=Tokyo+Haneda+Airport\" target=\"_blank\">Ankunft Haneda Airport</a></div><div class=\"activity-item\">Einchecken: Villa Fontaine Tokyo Hamamatsucho</div></div>` },
+            { day: 2, date: "19. Juni", location: "Tokio", title: "Kultur & Skyline", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\"><a href=\"https://www.google.com/maps/search/?api=1&query=Tokyo+Tower\" target=\"_blank\">Tokyo Tower</a>, <a href=\"https://www.google.com/maps/search/?api=1&query=Shiba+Park\" target=\"_blank\">Shiba Park</a>, <a href=\"https://www.google.com/maps/search/?api=1&query=Zojoji+Temple\" target=\"_blank\">Zōjō-ji</a></div><div class=\"activity-item\">Essen: <a href=\"https://www.google.com/maps/search/?api=1&query=Gonpachi+Nishi+Azabu\" target=\"_blank\">Gonpachi Nishi-Azabu</a>, Aussichtsplattform Roppongi Hills</div><div class=\"activity-item\"><a href=\"https://www.google.com/maps/search/?api=1&query=Hamarikyu+Gardens\" target=\"_blank\">Hamarikyū-Park</a></div><div class=\"activity-item\"><a href=\"https://www.google.com/maps/search/?api=1&query=Takeshiba+Waterfront\" target=\"_blank\">Takeshiba Waterfront</a></div></div>` },
+            { day: 3, date: "20. Juni", location: "Tokio", title: "Shibuya & Anime", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\"><a href=\"https://www.google.com/maps/search/?api=1&query=Shibuya+Scramble+Crossing\" target=\"_blank\">Shibuya Crossing</a> & MEGA Don Quijote</div><div class=\"activity-item\" data-theme=\"anime\"><a href=\"https://www.google.com/maps/search/?api=1&query=Meiji+Jingu\" target=\"_blank\">Meiji Jingu</a> & Takeshita Street & ONE PIECE Store</div><div class=\"activity-item\" data-theme=\"kultur\">Optional: <a href=\"https://www.google.com/maps/search/?api=1&query=Imperial+Palace+Tokyo\" target=\"_blank\">Imperial Palace</a></div></div>` },
+            { day: 4, date: "21. Juni", location: "Tokio → Kyoto", title: "Tempel", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\">Auschecken: Tokyo Hotel</div><div class=\"activity-item\">Einchecken: <a href=\"https://www.google.com/maps/search/?api=1&query=Almont+Hotel+Kyoto\" target=\"_blank\">Almont Hotel Kyoto</a></div><div class=\"activity-item\" data-theme=\"kultur\"><a href=\"https://www.google.com/maps/search/?api=1&query=Kinkaku-ji\" target=\"_blank\">Kinkaku-ji</a> & <a href=\"https://www.google.com/maps/search/?api=1&query=Kiyomizu-dera\" target=\"_blank\">Kiyomizu-dera</a></div></div>` },
+            { day: 5, date: "22. Juni", location: "Kyoto", title: "Schreine & Wald", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\" data-theme=\"kultur\"><a href=\"https://www.google.com/maps/search/?api=1&query=Fushimi+Inari+Taisha\" target=\"_blank\">Fushimi Inari Taisha</a></div><div class=\"activity-item\" data-theme=\"kultur\"><a href=\"https://www.google.com/maps/search/?api=1&query=Arashiyama+Bamboo+Grove\" target=\"_blank\">Arashiyama Bambuswald</a></div></div>` },
+            { day: 6, date: "23. Juni", location: "Kyoto", title: "Freier Tag", preBooked: false, details: `<p>Freier Tag in Kyoto</p>` },
+            { day: 7, date: "24. Juni", location: "Kyoto → Osaka", title: "Reise nach Osaka", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\">Auschecken: Almont Hotel Kyoto</div><div class=\"activity-item\">Einchecken: Smile Hotel Shinosaka</div></div>` },
+            { day: 8, date: "25. Juni", location: "Osaka", title: "Universal Studios", preBooked: true, details: `<div class=\"activity-item\" data-theme=\"anime\"><a href=\"https://www.google.com/maps/search/?api=1&query=Universal+Studios+Japan\" target=\"_blank\">Universal Studios Japan</a></div>` },
+            { day: 9, date: "26. Juni", location: "Osaka", title: "Expo 2025", preBooked: true, details: `<div class=\"activity-item\" data-theme=\"technologie\"><a href=\"https://www.google.com/maps/search/?api=1&query=Expo+2025+Osaka\" target=\"_blank\">Expo 2025 Osaka</a></div>` },
+            { day: 10, date: "27. Juni", location: "Hiroshima", title: "Hiroshima Ausflug", preBooked: true, details: `<div class=\"activity-item\" data-theme=\"kultur\"><a href=\"https://www.google.com/maps/search/?api=1&query=Hiroshima+Peace+Park\" target=\"_blank\">Hiroshima Peace Park</a> & Prayer Fountain</div>` },
+            { day: 11, date: "28. Juni", location: "Osaka", title: "Freier Tag", preBooked: false, details: `<p>Freier Tag in Osaka</p>` },
+            { day: 12, date: "29. Juni", location: "Osaka → Tokio", title: "Anime-Abend", preBooked: false, details: `<div class=\"space-y-4\"><div class=\"activity-item\">Auschecken: Smile Hotel Shinosaka</div><div class=\"activity-item\">Einchecken: Shinjuku Granbell Hotel</div><div class=\"activity-item\" data-theme=\"anime technologi
