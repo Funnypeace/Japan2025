@@ -150,6 +150,12 @@
                 </div>
             </div>
 
+            <div class="bg-white p-6 rounded-lg shadow-md mb-12">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Wetter (Durchschnitt, Juni/Juli)</h3>
+                <p>Tokio: 24–27 °C, ca. 13 Regentage ⛆</p>
+                <p>Kyōto/Osaka: 26–27 °C, ähnlich feucht</p>
+            </div>
+
             <div class="bg-white p-6 md:p-8 rounded-lg shadow-md mb-12">
                 <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Nächte pro Stadt</h3>
                 <div class="chart-container">
@@ -191,6 +197,8 @@
                 <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full bg-white shadow-sm border border-slate-200" data-filter="anime">🎨 Anime</button>
                 <button class="filter-btn px-4 py-2 text-sm font-medium rounded-full bg-white shadow-sm border border-slate-200" data-filter="kultur">⛩️ Kultur</button>
             </div>
+
+            <input id="search" type="text" placeholder="Aktivität suchen…" class="w-full md:w-1/2 mx-auto block mb-6 px-4 py-2 border border-slate-300 rounded-lg shadow-sm" />
 
             <div id="itinerary-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             </div>
@@ -241,6 +249,18 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md mt-8">
+                <h3 class="text-xl font-bold text-center mb-4">Japanisch-Miniguide</h3>
+                <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                    <li><strong>こんにちは (Konnichiwa)</strong> – Guten Tag</li>
+                    <li><strong>ありがとうございます (Arigatō gozaimasu)</strong> – Vielen Dank</li>
+                    <li><strong>すみません (Sumimasen)</strong> – Entschuldigung / Danke beim Ansprechen</li>
+                    <li><strong>はい / いいえ (Hai / Īe)</strong> – Ja / Nein</li>
+                    <li><strong>トイレはどこですか？ (Toire wa doko desu ka?)</strong> – Wo ist die Toilette?</li>
+                    <li><strong>いくらですか？ (Ikura desu ka?)</strong> – Wie viel kostet das?</li>
+                    <li><strong>英語を話せますか？ (Eigo o hanasemasu ka?)</strong> – Sprechen Sie Englisch?</li>
+                </ul>
             </div>
         </section>
 
@@ -386,6 +406,19 @@
                     document.getElementById('modal').addEventListener('click', e => {
                         if (e.target.id === 'modal') this.closeModal();
                     });
+
+                    const searchInput = document.getElementById('search');
+                    if (searchInput) {
+                        searchInput.addEventListener('input', e => {
+                            const q = e.target.value.toLowerCase();
+                            document.querySelectorAll('.day-card').forEach(card => {
+                                const idx = parseInt(card.dataset.day) - 1;
+                                const day = itineraryData[idx];
+                                const matches = day.details.toLowerCase().includes(q);
+                                card.style.display = matches || q === '' ? 'block' : 'none';
+                            });
+                        });
+                    }
 
                     document.getElementById('tips-accordion').addEventListener('click', e => {
                         const header = e.target.closest('.accordion-header');
